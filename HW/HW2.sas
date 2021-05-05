@@ -1,0 +1,140 @@
+/* QUESTION 1.4 */
+DATA IQ_TESTSCORES;
+	INPUT ID 1-3 IQ 4-6 MATH 7-9 SCIENCE 10-12;
+	OVERALL = (IQ + MATH + SCIENCE) / (3 * 500);
+	IF 0 <= IQ <= 100 THEN GROUP = 1;
+	ELSE IF 101<= IQ <= 140 THEN GROUP = 2;
+	ELSE GROUP = 3;
+	
+DATALINES;
+001128550590
+002102490501
+003140670690
+004115510510
+;
+PROC PRINT DATA=IQ_TESTSCORES;
+RUN;
+
+PROC SORT DATA=iq_testscores;
+	BY IQ;
+RUN;
+
+PROC FREQ DATA=iq_testscores;
+	TABLES GROUP;
+RUN;
+
+/* QUESTION 1.6 */
+DATA SURVEY;
+	INPUT QUES1 $ 1
+		  QUES2 $ 2
+		  QUES3 $ 3
+		  QUES4 $ 4
+		  QUES5 $ 5 ;
+DATALINES;
+ABCDE
+AACCE
+BBBBB
+CABBB
+DDAAC
+CABBB
+EEBBB
+ACACA
+;
+
+PROC FREQ DATA=survey;
+	TABLES QUES1 - QUES2/ NOCUM;
+RUN;
+
+/*Problem 2.2*/
+DATA CLINIC;
+	INPUT  ID 		$ 	1-3
+		   GENDER 	$ 	 4
+		   RACE 	$ 	 5
+		   HR 	 		 6-8
+		   SBP			9-11
+		   DBP			12-14
+		   N_PROC		15-16;
+DATALINES;
+001MW08013008010
+002FW08811007205
+003MB05018810002
+004FB   10806801
+005MW06812208204
+006FB101   07404
+007FW07810406603
+008MW04811207006
+009FB07719011009
+010FB06616410610
+;
+DATA CLINIC1;
+	SET CLINIC;
+	AVG_BP = (DBP + (SBP-DBP)) / 3;
+RUN;
+
+PROC MEANS DATA=CLINIC1 NMISS MEAN STD CLM MEDIAN;
+RUN;
+
+
+PROC PRINT DATA=CLINIC1;
+RUN;
+
+
+/*Question 2.6 */
+
+PROC UNIVARIATE DATA=CLINIC1 PLOT;
+	TITLE "Question 2.6";
+	VAR SBP DBP;
+RUN;
+
+/* Question 3.4 (b) */
+
+DATA BLOOD;
+	DO I=1 TO 50;
+		WBC = INT(RANNOR(1368) * 2000 + 5000);
+		X = RANUNI(0);
+		IF X LT 0.05 THEN WBC = .;
+		ELSE IF X LT 0.1 THEN WBC = WBC + 4000;
+		ELSE IF X LT 0.15 THEN WBC = WBC + 4000;
+		OUTPUT;
+	END;
+	DROP I X;
+RUN;
+
+data blood1;
+   set blood;
+   array NumVar _numeric_;
+   do over NumVar;
+      if NumVar=. then NumVar=0;
+   end;
+run;
+
+data blood2;
+	set blood1;
+	retain WBC1;
+	if WBC = 0 then WBC1 = "Not Available";
+	if 3000 <= WBC <= 4000 then WBC1 = "Low";
+	if 4001 <= WBC <= 6000 then WBC1 = "Medium";
+	if 6001 <= WBC <= 12000 then WBC1 = "High";
+	if 1 <= WBC < 3000 then WBC1 = "Abnormally Low";
+	if WBC > 12000 then WBC1 = "Abnormally High";
+	DROP WBC;
+	RENAME WBC1 = WBC;
+run;
+
+PROC FREQ DATA=blood2 ;
+
+	TABLES WBC1 / NOCUM;
+RUN;
+
+
+proc print data=blood2;
+run;
+
+
+
+
+
+
+
+
+		
